@@ -60,11 +60,16 @@ static NSHashTable<DarwinAudioSession *> *sessions = nil;
         [self getRouteSharingPolicy:args result:result];
     } else if ([@"setActive" isEqualToString:call.method]) {
         [self setActive:args result:result];
-    } else if ([@"getRecordPermission" isEqualToString:call.method]) {
+    }
+#if AUDIO_SESSION_MICROPHONE
+    else if ([@"getRecordPermission" isEqualToString:call.method]) {
         [self getRecordPermission:args result:result];
-    } else if ([@"requestRecordPermission" isEqualToString:call.method]) {
+    }
+    else if ([@"requestRecordPermission" isEqualToString:call.method]) {
         [self requestRecordPermission:args result:result];
-    } else if ([@"isOtherAudioPlaying" isEqualToString:call.method]) {
+    }
+#endif
+    else if ([@"isOtherAudioPlaying" isEqualToString:call.method]) {
         [self isOtherAudioPlaying:args result:result];
     } else if ([@"getSecondaryAudioShouldBeSilencedHint" isEqualToString:call.method]) {
         [self getSecondaryAudioShouldBeSilencedHint:args result:result];
@@ -210,23 +215,17 @@ static NSHashTable<DarwinAudioSession *> *sessions = nil;
     }
 }
 
-- (void)getRecordPermission:(NSArray *)args result:(FlutterResult)result {
 #if AUDIO_SESSION_MICROPHONE
+- (void)getRecordPermission:(NSArray *)args result:(FlutterResult)result {
     result([self recordPermissionToFlutter:[[AVAudioSession sharedInstance] recordPermission]]);
-#else
-    result(FlutterMethodNotImplemented);
-#endif
 }
 
 - (void)requestRecordPermission:(NSArray *)args result:(FlutterResult)result {
-#if AUDIO_SESSION_MICROPHONE
     [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
         result(@(granted));
     }];
-#else
-    result(FlutterMethodNotImplemented);
-#endif
 }
+#endif
 
 - (void)isOtherAudioPlaying:(NSArray *)args result:(FlutterResult)result {
     result(@([[AVAudioSession sharedInstance] isOtherAudioPlaying]));
